@@ -13,7 +13,7 @@ app.use(bodyParser.json({ limit: '10mb' })); // Increase limit for base64 images
 app.use(express.static('public'));
 
 // Database connection
-mongoose.connect('mongodb://localhost:27017/ecommerce', {
+mongoose.connect('mongodb+srv://slmenscollection:kanna2006@cluster0.2kfapar.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
@@ -1355,7 +1355,7 @@ app.get('/login', (req, res) => {
 // Login POST
 app.post('/login', (req, res) => {
     const { phone, password } = req.body;
-    if (phone === 'nagalakshmi' && password === 'n@g@l@kshmi') {
+    if (phone === 'slmenscollections' && password === 'nagarjun') {
         res.cookie('adminLoggedIn', 'true', { maxAge: 365 * 24 * 60 * 60 * 1000 });
         res.redirect('/admin');
     } else {
