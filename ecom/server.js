@@ -17,6 +17,24 @@ mongoose.connect('mongodb+srv://slmenscollection:kanna2006@cluster0.2kfapar.mong
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
+// User Schema
+const userSchema = new mongoose.Schema({
+    phone: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const User = mongoose.model('User', userSchema);
+
+// Product Count Schema
+const productCountSchema = new mongoose.Schema({
+    category: { type: String, required: true, unique: true },
+    count: { type: Number, default: 0 },
+    totalPrice: { type: Number, default: 0 }
+});
+
+const ProductCount = mongoose.model('ProductCount', productCountSchema);
 
 // Product Schema with base64 image storage
 const productSchema = new mongoose.Schema({
@@ -1268,6 +1286,9 @@ app.get('/login', (req, res) => {
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-login btn-lg">Login</button>
                             </div>
+                             <div class="text-center mt-3">
+                <p>Don't have an account? <a href="/register">Register here</a></p>
+            </div>
                         </form>
                     </div>
                 </div>
@@ -1351,7 +1372,451 @@ app.get('/login', (req, res) => {
 
 // Login POST
 
+// Registration Page
+app.get('/register', (req, res) => {
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Register | SL MEN'S</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+            <style>
+                :root {
+                    --primary-color: #343a40;
+                    --secondary-color: #6c757d;
+                    --accent-color: #0d6efd;
+                }
+                
+                body {
+                    background-color: #f8f9fa;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                }
+                
+                .navbar-brand {
+                    font-weight: 700;
+                    letter-spacing: 1px;
+                }
+                
+                .register-container {
+                    max-width: 500px;
+                    margin: 2rem auto;
+                    padding: 2rem;
+                    background: white;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                }
+                
+                .form-control:focus {
+                    border-color: var(--accent-color);
+                    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+                }
+                
+                .btn-primary {
+                    background-color: var(--primary-color);
+                    border-color: var(--primary-color);
+                    padding: 0.5rem;
+                    font-weight: 500;
+                    transition: all 0.3s ease;
+                }
+                
+                .btn-primary:hover {
+                    background-color: #495057;
+                    border-color: #495057;
+                    transform: translateY(-1px);
+                }
+                
+                .form-label {
+                    font-weight: 500;
+                    color: var(--secondary-color);
+                }
+                
+                .input-group-text {
+                    background-color: #e9ecef;
+                }
+                
+                @media (max-width: 576px) {
+                    .register-container {
+                        margin: 1rem;
+                        padding: 1.5rem;
+                    }
+                    
+                    body {
+                        padding-top: 0;
+                    }
+                    
+                    .navbar {
+                        padding: 0.5rem 1rem;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+                <div class="container">
+                    <a class="navbar-brand" href="/">
+                        <i class="bi bi-shop"></i> SL MEN'S
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/login">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            
+            <div class="container">
+                <div class="register-container">
+                    <h2 class="text-center mb-4">
+                        <i class="bi bi-person-plus"></i> Create Account
+                    </h2>
+                    
+                    <form action="/register" method="POST" id="registerForm">
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-phone"></i>
+                                </span>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       placeholder="Enter your phone number" required
+                                       pattern="[0-9]{10,15}" title="Please enter a valid phone number">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-envelope"></i>
+                                </span>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="Enter your email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock"></i>
+                                </span>
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       placeholder="Create a password" required
+                                       minlength="6" title="Password must be at least 6 characters">
+                            </div>
+                            <div class="form-text">Must be at least 6 characters</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mt-2">
+                            <i class="bi bi-person-plus"></i> Register
+                        </button>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <p class="mb-2">Already have an account? <a href="/login" class="text-decoration-none">Sign in</a></p>
+                        <a href="/" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left"></i> Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Terms and Conditions Modal -->
+            <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>By creating an account, you agree to our terms of service and privacy policy.</p>
+                            <p>Your personal information will be used to provide and improve our services. We will never share your information with third parties without your consent.</p>
+                            <p>You are responsible for maintaining the confidentiality of your account and password.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+                // Client-side form validation
+                document.getElementById('registerForm').addEventListener('submit', function(e) {
+                    const password = document.getElementById('password').value;
+                    const terms = document.getElementById('terms').checked;
+                    
+                    if (password.length < 6) {
+                        alert('Password must be at least 6 characters');
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    if (!terms) {
+                        alert('You must agree to the terms and conditions');
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    return true;
+                });
+            </script>
+        </body>
+        </html>
+    `);
+});
 
+// Handle Registration
+app.post('/register', async (req, res) => {
+    try {
+        const { phone, email, password } = req.body;
+        
+        // Basic validation
+        if (!phone || !email || !password) {
+            return res.status(400).send(`
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Error!</strong> All fields are required.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <div class="mt-2">
+                        <a href="/register" class="btn btn-sm btn-outline-danger">Go back</a>
+                    </div>
+                </div>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            `);
+        }
+        
+        // Check if user already exists
+        const existingUser = await User.findOne({ $or: [{ phone }, { email }] });
+        if (existingUser) {
+            return res.status(409).send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Registration Failed</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Bootstrap Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+        <style>
+            body {
+                background: #f8f9fa;
+                font-family: 'Segoe UI', sans-serif;
+            }
+            .container {
+                max-width: 600px;
+                margin-top: 80px;
+                padding: 20px;
+            }
+            .alert {
+                box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+                border-radius: 10px;
+                background-color: #fef2f2;
+            }
+            .btn-close {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+            }
+            .btn-sm {
+                min-width: 130px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="alert alert-danger alert-dismissible fade show position-relative" role="alert">
+                <h4 class="alert-heading">
+                    <i class="bi bi-exclamation-triangle-fill text-danger"></i> Registration Failed
+                </h4>
+                <p>User with this phone number or email already exists.</p>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <a href="/login" class="btn btn-sm btn-success">
+                        <i class="bi bi-box-arrow-in-right"></i> Login instead
+                    </a>
+                    <a href="/register" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-arrow-counterclockwise"></i> Try again
+                    </a>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+    </html>
+`);
+
+        }
+        
+        // Create new user
+        const user = new User({ phone, email, password });
+        await user.save();
+        
+        // Redirect to home page with success message
+        res.redirect('/?registration=success');
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).send(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Error | SL MEN'S</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --error-color: #dc3545;
+            --error-bg: #f8d7da;
+            --error-border: #f5c2c7;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .error-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .error-alert {
+            border-left: 5px solid var(--error-color);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .error-heading {
+            color: var(--error-color);
+        }
+        
+        .error-details {
+            font-size: 0.9rem;
+            background-color: var(--error-bg);
+            border: 1px solid var(--error-border);
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 15px;
+            word-break: break-word;
+        }
+        
+        .btn-outline-secondary {
+            border-color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .error-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .btn-group-responsive {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn-group-responsive .btn {
+                width: 100%;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-shop"></i> SL MEN'S
+            </a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="error-container">
+            <div class="alert alert-danger error-alert alert-dismissible fade show" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-octagon-fill fs-3 me-3"></i>
+                    <div>
+                        <h4 class="alert-heading error-heading mb-2">Registration Error</h4>
+                        <p class="mb-3">We encountered an issue while processing your registration request.</p>
+                    </div>
+                </div>
+                
+                <div class="error-details mb-3">
+                    <strong>Details:</strong> ${error.message}
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex flex-wrap btn-group-responsive justify-content-between">
+                    <a href="/" class="btn btn-outline-secondary">
+                        <i class="bi bi-house"></i> Return Home
+                    </a>
+                    <a href="/register" class="btn btn-primary">
+                        <i class="bi bi-arrow-repeat"></i> Try Again
+                    </a>
+                    <button type="button" class="btn btn-outline-danger" data-bs-dismiss="alert">
+                        <i class="bi bi-x-circle"></i> Dismiss
+                    </button>
+                </div>
+                
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <div class="text-center mt-4 text-muted">
+                <small>If the problem persists, please contact support.</small>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-dismiss alert after 10 seconds
+        setTimeout(() => {
+            const alert = document.querySelector('.alert');
+            if (alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
+`);
+    }
+});
 // Login POST
 app.post('/login', (req, res) => {
     const { phone, password } = req.body;
@@ -1424,7 +1889,7 @@ app.get('/admin', async (req, res) => {
                 </style>
             </head>
             <body>
-                <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
                     <div class="container-fluid">
                         <a class="navbar-brand" href="/admin">MyShop Admin</a>
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -1439,12 +1904,18 @@ app.get('/admin', async (req, res) => {
                                     <a class="nav-link" href="/admin/orders">Orders</a>
                                 </li>
                                 <li class="nav-item">
+                                    <a class="nav-link" href="/admin/users">Users</a>
+                                </li>
+                                <li class="nav-item">
                                     <a class="nav-link" href="/admin/add-product">Add Product</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/admin/product-analysis">Product Analysis</a>
                                 </li>
                             </ul>
                             <ul class="navbar-nav">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                                    <a class="nav-link" href="/logout">Logout</a>
                                 </li>
                             </ul>
                         </div>
@@ -1652,6 +2123,475 @@ app.get('/admin', async (req, res) => {
                 <h1>Internal Server Error</h1>
                 <p>${error.message}</p>
                 <a href="/admin" class="btn btn-primary">Try Again</a>
+            </div>
+        `);
+    }
+});
+app.get('/admin/users', async (req, res) => {
+    if (req.cookies.adminLoggedIn !== 'true') {
+        return res.redirect('/login');
+    }
+    
+    try {
+        const users = await User.find().sort({ createdAt: -1 });
+        
+        res.send(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>User Management | Admin Dashboard</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+                <style>
+                    :root {
+                        --primary-color: #343a40;
+                        --secondary-color: #6c757d;
+                        --accent-color: #0d6efd;
+                    }
+                    
+                    body {
+                        background-color: #f8f9fa;
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    }
+                    
+                    .admin-navbar {
+                        background-color: var(--primary-color);
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+                    
+                    .admin-container {
+                        padding: 20px;
+                        background: white;
+                        border-radius: 8px;
+                        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+                        margin-top: 20px;
+                    }
+                    
+                    .table-responsive {
+                        overflow-x: auto;
+                    }
+                    
+                    .table th {
+                        background-color: var(--primary-color);
+                        color: white;
+                        position: sticky;
+                        top: 0;
+                    }
+                    
+                    .table-hover tbody tr:hover {
+                        background-color: rgba(13, 110, 253, 0.1);
+                    }
+                    
+                    .badge-admin {
+                        background-color: var(--accent-color);
+                    }
+                    
+                    @media (max-width: 768px) {
+                        .admin-container {
+                            padding: 15px;
+                            margin: 10px;
+                        }
+                        
+                        .table-responsive {
+                            border: 0;
+                        }
+                        
+                        .table thead {
+                            display: none;
+                        }
+                        
+                        .table tr {
+                            display: block;
+                            margin-bottom: 20px;
+                            border: 1px solid #dee2e6;
+                            border-radius: 5px;
+                        }
+                        
+                        .table td {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            border-bottom: 1px solid #dee2e6;
+                        }
+                        
+                        .table td::before {
+                            content: attr(data-label);
+                            font-weight: bold;
+                            margin-right: 15px;
+                            color: var(--secondary-color);
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <nav class="navbar navbar-expand-lg navbar-dark admin-navbar">
+                    <div class="container">
+                        <a class="navbar-brand" href="/admin">
+                            <i class="bi bi-speedometer2"></i> Admin Dashboard
+                        </a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="adminNav">
+                            <ul class="navbar-nav me-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/admin/users">
+                                        <i class="bi bi-people-fill"></i> Users
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/admin/product-analysis">
+                                        <i class="bi bi-graph-up"></i> Product Analysis
+                                    </a>
+                                </li>
+                            </ul>
+                            <ul class="navbar-nav ms-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link text-danger" href="/admin/logout">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+                
+                <div class="container admin-container">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">
+                            <i class="bi bi-people-fill"></i> User Management
+                        </h2>
+                        <span class="badge bg-primary rounded-pill">${users.length} users</span>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th><i class="bi bi-phone"></i> Phone</th>
+                                    <th><i class="bi bi-envelope"></i> Email</th>
+                                    <th><i class="bi bi-calendar"></i> Joined</th>
+                                    <th><i class="bi bi-clock-history"></i> Last Active</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${users.map(user => `
+                                    <tr>
+                                        <td data-label="Phone">${user.phone || 'N/A'}</td>
+                                        <td data-label="Email">${user.email || 'N/A'}</td>
+                                        <td data-label="Joined">${new Date(user.createdAt).toLocaleDateString()}</td>
+                                        <td data-label="Last Active">${user.lastActive ? new Date(user.lastActive).toLocaleString() : 'Never'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            </body>
+            </html>
+        `);
+    } catch (error) {
+        res.status(500).send(`
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill"></i> Error loading users: ${error.message}
+            </div>
+        `);
+    }
+});
+
+app.get('/admin/product-analysis', async (req, res) => {
+    if (req.cookies.adminLoggedIn !== 'true') {
+        return res.redirect('/login');
+    }
+    
+    try {
+        // Get product counts by category
+        const products = await Product.aggregate([
+            { $group: { 
+                _id: "$category", 
+                count: { $sum: 1 },
+                totalPrice: { $sum: "$price" },
+                avgPrice: { $avg: "$price" }
+            }}
+        ]);
+        
+        // Update or create ProductCount documents
+        for (const product of products) {
+            await ProductCount.findOneAndUpdate(
+                { category: product._id },
+                { $set: { 
+                    count: product.count, 
+                    totalPrice: product.totalPrice,
+                    avgPrice: product.avgPrice
+                }},
+                { upsert: true, new: true }
+            );
+        }
+        
+        // Get all product counts
+        const productCounts = await ProductCount.find().sort({ count: -1 });
+        
+        res.send(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Product Analysis | Admin Dashboard</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+                <style>
+                    /* Same styles as users page */
+                    :root {
+                        --primary-color: #343a40;
+                        --secondary-color: #6c757d;
+                        --accent-color: #0d6efd;
+                    }
+                    
+                    body {
+                        background-color: #f8f9fa;
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    }
+                    
+                    .admin-navbar {
+                        background-color: var(--primary-color);
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+                    
+                    .admin-container {
+                        padding: 20px;
+                        background: white;
+                        border-radius: 8px;
+                        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+                        margin-top: 20px;
+                    }
+                    
+                    .table-responsive {
+                        overflow-x: auto;
+                    }
+                    
+                    .table th {
+                        background-color: var(--primary-color);
+                        color: white;
+                        position: sticky;
+                        top: 0;
+                    }
+                    
+                    .progress {
+                        height: 25px;
+                    }
+                    
+                    .progress-bar {
+                        background-color: var(--accent-color);
+                    }
+                    
+                    @media (max-width: 768px) {
+                        .admin-container {
+                            padding: 15px;
+                            margin: 10px;
+                        }
+                        
+                        .table-responsive {
+                            border: 0;
+                        }
+                        
+                        .table thead {
+                            display: none;
+                        }
+                        
+                        .table tr {
+                            display: block;
+                            margin-bottom: 20px;
+                            border: 1px solid #dee2e6;
+                            border-radius: 5px;
+                        }
+                        
+                        .table td {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            border-bottom: 1px solid #dee2e6;
+                        }
+                        
+                        .table td::before {
+                            content: attr(data-label);
+                            font-weight: bold;
+                            margin-right: 15px;
+                            color: var(--secondary-color);
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <nav class="navbar navbar-expand-lg navbar-dark admin-navbar">
+                    <div class="container">
+                        <a class="navbar-brand" href="/admin">
+                            <i class="bi bi-speedometer2"></i> Admin Dashboard
+                        </a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="adminNav">
+                            <ul class="navbar-nav me-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/admin/users">
+                                        <i class="bi bi-people-fill"></i> Users
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="/admin/product-analysis">
+                                        <i class="bi bi-graph-up"></i> Product Analysis
+                                    </a>
+                                </li>
+                            </ul>
+                            <ul class="navbar-nav ms-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link text-danger" href="/admin/logout">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+                
+                <div class="container admin-container">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="mb-0">
+                            <i class="bi bi-graph-up"></i> Product Analysis
+                        </h2>
+                        <span class="badge bg-primary rounded-pill">${productCounts.length} categories</span>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th><i class="bi bi-tag"></i> Category</th>
+                                    <th><i class="bi bi-box-seam"></i> Count</th>
+                                    <th><i class="bi bi-currency-rupee"></i> Total Value</th>
+                                    <th><i class="bi bi-currency-exchange"></i> Avg Price</th>
+                                    <th><i class="bi bi-bar-chart"></i> Distribution</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${productCounts.map(pc => {
+                                    const totalProducts = productCounts.reduce((sum, item) => sum + item.count, 0);
+                                    const percentage = ((pc.count / totalProducts) * 100).toFixed(1);
+                                    return `
+                                        <tr>
+                                            <td data-label="Category">${pc.category || 'Uncategorized'}</td>
+                                            <td data-label="Count">${pc.count}</td>
+                                            <td data-label="Total Value">₹${pc.totalPrice.toFixed(2)}</td>
+                                            <td data-label="Avg Price">₹${pc.avgPrice ? pc.avgPrice.toFixed(2) : '0.00'}</td>
+                                            <td data-label="Distribution">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress flex-grow-1 me-2">
+                                                        <div class="progress-bar" role="progressbar" style="width: ${percentage}%" 
+                                                            aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <small>${percentage}%</small>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="bi bi-pie-chart"></i> Products by Category
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="categoryChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="bi bi-currency-rupee"></i> Value by Category
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="valueChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script>
+                    // Prepare data for charts
+                    const categories = ${JSON.stringify(productCounts.map(pc => pc.category || 'Uncategorized'))};
+                    const counts = ${JSON.stringify(productCounts.map(pc => pc.count))};
+                    const values = ${JSON.stringify(productCounts.map(pc => pc.totalPrice))};
+                    
+                    // Category distribution chart
+                    const ctx1 = document.getElementById('categoryChart').getContext('2d');
+                    new Chart(ctx1, {
+                        type: 'pie',
+                        data: {
+                            labels: categories,
+                            datasets: [{
+                                data: counts,
+                                backgroundColor: [
+                                    '#0d6efd', '#6610f2', '#6f42c1', '#d63384', 
+                                    '#fd7e14', '#ffc107', '#20c997', '#198754'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                    
+                    // Value distribution chart
+                    const ctx2 = document.getElementById('valueChart').getContext('2d');
+                    new Chart(ctx2, {
+                        type: 'bar',
+                        data: {
+                            labels: categories,
+                            datasets: [{
+                                label: 'Total Value (₹)',
+                                data: values,
+                                backgroundColor: '#0d6efd',
+                                borderColor: '#0a58ca',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                </script>
+            </body>
+            </html>
+        `);
+    } catch (error) {
+        res.status(500).send(`
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill"></i> Error loading product analysis: ${error.message}
             </div>
         `);
     }
@@ -3284,6 +4224,29 @@ app.post('/complete-order', async (req, res) => {
 
 
 // API Routes
+app.delete('/api/products/:id', async (req, res) => {
+    try {
+        // Find the product first to get its category and price
+        const product = await Product.findById(req.params.id);
+        
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+        
+        // Update product count for the category before deleting
+        await ProductCount.findOneAndUpdate(
+            { category: product.category },
+            { $inc: { count: -1, totalPrice: -product.price } }
+        );
+        
+        // Now delete the product
+        await product.remove();
+        
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 // Get all products
 app.get('/api/products', async (req, res) => {
@@ -3338,6 +4301,14 @@ app.post('/api/products', async (req, res) => {
         });
         
         await product.save();
+        
+        // Update product count for the category
+        const productCount = await ProductCount.findOneAndUpdate(
+            { category: product.category },
+            { $inc: { count: 1, totalPrice: product.price } },
+            { upsert: true, new: true }
+        );
+        
         res.json({ success: true, product });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -3354,6 +4325,10 @@ app.put('/api/products/:id', async (req, res) => {
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
+        
+        // Store original values for count updates
+        const originalCategory = product.category;
+        const originalPrice = product.price;
         
         // Update fields
         product.name = name || product.name;
@@ -3388,6 +4363,28 @@ app.put('/api/products/:id', async (req, res) => {
                     contentType: additionalImagesType
                 });
             }
+        }
+        
+        // Handle product count updates if category or price changed
+        if (category && category !== originalCategory) {
+            // Category changed - update both old and new category counts
+            await ProductCount.findOneAndUpdate(
+                { category: originalCategory },
+                { $inc: { count: -1, totalPrice: -originalPrice } }
+            );
+            
+            await ProductCount.findOneAndUpdate(
+                { category: product.category },
+                { $inc: { count: 1, totalPrice: product.price } },
+                { upsert: true }
+            );
+        } else if (price && parseFloat(price) !== originalPrice) {
+            // Only price changed - update price difference
+            const priceDiff = parseFloat(price) - originalPrice;
+            await ProductCount.findOneAndUpdate(
+                { category: product.category },
+                { $inc: { totalPrice: priceDiff } }
+            );
         }
         
         await product.save();
